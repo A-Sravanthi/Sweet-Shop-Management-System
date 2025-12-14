@@ -1,0 +1,4 @@
+require("dotenv").config(); // Load .env variables
+console.log(process.env.JWT_SECRET);
+const jwt = require('jsonwebtoken')
+const mongoose = require('mongoose');
