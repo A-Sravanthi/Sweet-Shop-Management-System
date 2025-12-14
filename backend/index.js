@@ -1,34 +1,44 @@
+// backend/index.js
+
 const express = require('express');
+const path = require('path');                // Added path module
 require('dotenv').config();
-
-console.log(process.env.PORT); 
-
 const mongoose = require('mongoose');
 const cors = require('cors');
-const authRoutes = require('./routes/authRoutes');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
+
+const authRoutes = require('./routes/authRoutes');
+const adminRoutes = require('./routes/adminRoutes');  // Make sure this exists
+
 const app = express();
 
-app.use(express.static('public'));
-app.use(cookieParser());
-app.use(cors({credentials:true, origin: 'http://localhost:5173'}));
+// Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cors({ credentials: true, origin: 'http://localhost:5173' }));
+app.use(cookieParser());
 
-mongoose.connect(process.env.DATABASE_URL)
-  .then((result) => app.listen(process.env.PORT,(req,res)=>{
-    console.log('mongodb connected and started');
-  }))
-  .catch((err) => console.log(err));
+// Serve static files
+app.use(express.static('public'));  // general static folder
+app.use('/images', express.static(path.join(path.resolve(), 'images'))); // for sweet images
 
-// app.get('*', checkUser);
-
-
-
+// Routes
 app.use('/api', authRoutes);
+app.use('/api/admin', adminRoutes);
 
-
+// Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: err.message });
 });
+
+// Connect to MongoDB and start server
+mongoose.connect(process.env.DATABASE_URL)
+  .then(() => {
+    app.listen(process.env.PORT, () => {
+      console.log(`Server running on port ${process.env.PORT}`);
+      console.log('MongoDB connected');
+    });
+  })
+  .catch(err => console.log(err));
