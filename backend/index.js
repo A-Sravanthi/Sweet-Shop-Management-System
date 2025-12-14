@@ -5,7 +5,7 @@ console.log(process.env.PORT);
 
 const mongoose = require('mongoose');
 const cors = require('cors');
-const webRoutes = require('./routes/webRoutes');
+const authRoutes = require('./routes/authRoutes');
 const cookieParser = require('cookie-parser');
 const jwt = require('jsonwebtoken');
 const app = express();
@@ -25,4 +25,10 @@ mongoose.connect(process.env.DATABASE_URL)
 
 
 
-app.use(webRoutes);
+app.use('/api', authRoutes);
+
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ message: err.message });
+});
